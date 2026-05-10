@@ -7,5 +7,23 @@
     "size": 4717649,
     "chunk_count": 332,
     "embed_model": "nomic-embed-text"
+  },
+  "919ddd58-7863-46e6-a3a0-bba512d239f9": {
+    "id": "919ddd58-7863-46e6-a3a0-bba512d239f9",
+    "filename": "EDA_SummaryReport.docx",
+    "stored_path": "C:\\Users\\Vivaan\\.gemini\\antigravity\\scratch\\ai-data-vault\\backend\\uploads\\919ddd58-7863-46e6-a3a0-bba512d239f9.docx",
+    "ext": ".docx",
+    "size": 37274,
+    "chunk_count": 11,
+    "embed_model": "nomic-embed-text"
+  },
+  "082ea712-5c24-4162-9647-43f2817e2477": {
+    "id": "082ea712-5c24-4162-9647-43f2817e2477",
+    "filename": "BROK 25_26 - Google Sheets.pdf",
+    "stored_path": "C:\\Users\\Vivaan\\.gemini\\antigravity\\scratch\\ai-data-vault\\backend\\uploads\\082ea712-5c24-4162-9647-43f2817e2477.pdf",
+    "ext": ".pdf",
+    "size": 67747,
+    "chunk_count": 4,
+    "embed_model": "nomic-embed-text"
   }
 }
