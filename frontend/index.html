@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Personal AI Data Vault — Local-First RAG</title>
+  <meta name="description" content="Chat with your personal documents locally. No cloud. No data leaves your machine."/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🔐</div>
+    <div>
+      <div class="logo-text">AI Data Vault</div>
+      <div class="logo-sub">Local · Private · Yours</div>
+    </div>
+  </div>
+
+  <div class="nav-item active" id="nav-chat" onclick="showPage('chat')">
+    <span class="nav-icon">💬</span> Chat
+  </div>
+  <div class="nav-item" id="nav-documents" onclick="showPage('documents')">
+    <span class="nav-icon">📂</span> Documents
+  </div>
+  <div class="nav-item" id="nav-settings" onclick="showPage('settings')">
+    <span class="nav-icon">⚙️</span> Settings
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="status-badge">
+      <div class="status-dot" id="ollama-dot"></div>
+      <span id="ollama-label">Checking Ollama…</span>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Main Content ── -->
+<main class="main">
+
+  <!-- ══ CHAT PAGE ══ -->
+  <div class="page active" id="page-chat">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Chat with your Vault</div>
+        <div class="page-sub" id="chat-doc-label">Searching across all documents</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="clearChat()">🗑 Clear chat</button>
+    </div>
+
+    <div class="chat-layout">
+      <div class="chat-main">
+        <div class="chat-messages" id="chat-messages">
+          <div class="chat-welcome" id="chat-welcome">
+            <div class="icon">🧠</div>
+            <h2>Ask anything about your documents</h2>
+            <p>Upload files on the Documents page, then ask questions here. Everything runs locally — your data never leaves your machine.</p>
+          </div>
+        </div>
+
+        <div class="chat-input-area">
+          <div class="chat-input-row">
+            <textarea id="chat-input" rows="1" placeholder="Ask a question about your documents…"></textarea>
+            <button class="send-btn" id="send-btn" onclick="sendMessage()" title="Send (Enter)">➤</button>
+          </div>
+          <div class="chat-hint">Press <kbd>Enter</kbd> to send · <kbd>Shift+Enter</kbd> for new line</div>
+        </div>
+      </div>
+
+      <!-- Chat Sidebar — Doc Filter -->
+      <div class="chat-sidebar">
+        <h4>Filter by doc</h4>
+        <div class="filter-item active" id="filter-all" onclick="setDocFilter(null, this)">
+          <span class="filter-icon">📚</span> All docs
+        </div>
+        <div id="chat-doc-filters"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ DOCUMENTS PAGE ══ -->
+  <div class="page" id="page-documents">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Documents</div>
+        <div class="page-sub">Upload and manage your private files</div>
+      </div>
+      <div id="vault-stat" style="font-size:13px;color:var(--text-muted)"></div>
+    </div>
+
+    <div style="padding:24px 32px 0;flex-shrink:0">
+      <!-- Upload Zone -->
+      <div class="upload-zone" id="upload-zone"
+           onclick="document.getElementById('file-input').click()"
+           ondragover="handleDragOver(event)"
+           ondragleave="handleDragLeave(event)"
+           ondrop="handleDrop(event)">
+        <div class="upload-icon">📁</div>
+        <div class="upload-title">Drop files here or click to browse</div>
+        <div class="upload-sub">Your files are processed locally and never sent to any server</div>
+        <div class="upload-types">
+          <span class="type-tag">PDF</span>
+          <span class="type-tag">DOCX</span>
+          <span class="type-tag">TXT</span>
+          <span class="type-tag">MD</span>
+          <span class="type-tag">HTML</span>
+        </div>
+        <div class="progress-wrap" id="progress-wrap">
+          <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill"></div></div>
+          <div class="progress-label" id="progress-label">Uploading…</div>
+        </div>
+      </div>
+      <input type="file" id="file-input" style="display:none"
+             accept=".pdf,.docx,.txt,.md,.markdown,.html,.htm"
+             multiple onchange="handleFileSelect(event)"/>
+    </div>
+
+    <!-- Doc Grid -->
+    <div class="docs-grid" id="docs-grid">
+      <div class="empty-state" id="docs-empty" style="grid-column:1/-1">
+        <div class="icon">🗃️</div>
+        <h3>No documents yet</h3>
+        <p>Upload your first file above to start chatting with your data.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SETTINGS PAGE ══ -->
+  <div class="page" id="page-settings">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Settings</div>
+        <div class="page-sub">Configure your local AI models</div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="saveSettings()">💾 Save</button>
+    </div>
+
+    <div class="settings-body">
+      <div class="settings-section">
+        <div class="section-title">🧠 Language Model (LLM)</div>
+        <div class="section-desc">The model used to generate answers. Must be pulled in Ollama.</div>
+        <div class="form-group">
+          <label class="form-label" for="llm-input">Active Model</label>
+          <input class="form-input" id="llm-input" type="text" placeholder="e.g. llama3, mistral, gemma3"/>
+          <div class="form-hint">Available models detected from Ollama:</div>
+          <div class="model-list" id="llm-model-list"></div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="section-title">🔢 Embedding Model</div>
+        <div class="section-desc">Used to convert documents to vectors. <code>nomic-embed-text</code> is recommended.</div>
+        <div class="form-group">
+          <label class="form-label" for="embed-input">Embedding Model</label>
+          <input class="form-input" id="embed-input" type="text" placeholder="e.g. nomic-embed-text"/>
+          <div class="form-hint">⚠️ Changing this requires re-uploading all documents.</div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="section-title">🔍 Retrieval Settings</div>
+        <div class="form-group">
+          <label class="form-label" for="n-results">Chunks per query: <strong id="n-results-label">5</strong></label>
+          <input class="form-input" id="n-results" type="range" min="2" max="12" value="5"
+                 oninput="document.getElementById('n-results-label').textContent=this.value"
+                 style="padding:0;background:transparent;border:none;cursor:pointer"/>
+          <div class="form-hint">More chunks = more context but slower responses.</div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="section-title">📡 Ollama Status</div>
+        <div class="section-desc">Ollama must be running locally for the vault to work.</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button class="btn btn-ghost" onclick="checkOllamaStatus()">🔄 Refresh Status</button>
+          <a href="https://ollama.com/download" target="_blank" class="btn btn-ghost">📥 Install Ollama</a>
+        </div>
+        <div id="ollama-detail" style="margin-top:16px;font-size:13px;color:var(--text-muted)"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+<!-- Overlay spinner -->
+<div class="overlay" id="overlay"><div class="spinner"></div></div>
+
+<script src="app.js"></script>
+</body>
+</html>
