@@ -229,4 +229,4 @@ MIT License
 
 Developed by Rihen Moradia
 
-GitHub: [https://github.com/YOUR_USERNAME](https://github.com/mattperrymatt45-pixel)
+GitHub: (https://github.com/mattperrymatt45-pixel)
